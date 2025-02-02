@@ -1,17 +1,9 @@
 import datetime
-import json
 import os
-from typing import Dict, List, OrderedDict
+from typing import Dict, List
 
-import pandas as pd
 from pandas import DataFrame
-from collections import namedtuple, defaultdict
-import pprint
-import requests
-from dotenv import load_dotenv
 
-from src.external_api import PATH_TO_USER_SETTINGS_FILE
-from src.readers import read_json_file, read_excel_file
 
 # Получаю абсолютный путь к корневой директории проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -78,17 +70,3 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
             date_start = date_end.replace(month=(month_date_end - 3), day=1, hour=0, minute=0, second=0, microsecond=0)
 
     return date_start, date_end
-
-
-# if __name__ == "__main__":
-#
-#     # print(get_date_range("25.11.2021 14:33:34", 'ALL'))
-#     # transactions_list = get_transactions_in_date_range(
-#     #     datetime.datetime(2021, 11, 1, 0, 0),
-#     #     datetime.datetime(2021, 11, 25, 14, 33, 34))
-#     # pprint.pprint(transactions_list, width=40)
-#     # pprint.pprint(income_in_date_range(transactions_list), width=40)
-#     currencies_and_stocks = read_json_file(PATH_TO_USER_SETTINGS_FILE)
-    # pprint.pprint(get_currencies_rate(currencies_and_stocks))
-    # pprint.pprint(get_stocks_rate(currencies_and_stocks))
-

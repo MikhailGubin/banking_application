@@ -45,7 +45,7 @@ def test_read_json_file_wrong_path() -> None:
     если JSON-файл со списком не найден
     """
     path_to_file = os.path.join(os.path.dirname(__file__), "operations.json")
-    assert read_json_file(path_to_file) == []
+    assert read_json_file(path_to_file) == {}
 
 def test_read_json_file_empty() -> None:
     """
@@ -55,7 +55,7 @@ def test_read_json_file_empty() -> None:
     mocked_open = mock_open(read_data="[]")
     with patch("builtins.open", mocked_open):
         result = read_json_file(PATH_TO_USER_SETTINGS_FILE)
-    assert result == []
+    assert result == {}
     mocked_open.assert_called_once_with(PATH_TO_USER_SETTINGS_FILE)
 
 def test_read_json_file_not_list() -> None:

@@ -1,14 +1,9 @@
-import json
 import datetime
-import os
 from typing import Any
-from unittest.mock import patch, mock_open
-
 import pandas as pd
 import pytest
+from src.utils import writing_dataframe_to_dict, get_date_range
 
-from src.utils import read_excel_file, writing_dataframe_to_dict, get_date_range, BASE_URL, read_json_file, \
-    PATH_TO_USER_SETTINGS_FILE
 
 
 @pytest.mark.parametrize(

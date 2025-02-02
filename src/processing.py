@@ -1,5 +1,6 @@
+import pprint
 from collections import defaultdict
-from datetime import datetime
+import datetime
 
 from src.readers import read_excel_file
 from src.utils import PATH_TO_EXCEL_FILE, writing_dataframe_to_dict
@@ -24,7 +25,7 @@ def get_transactions_in_date_range(date_start: datetime.datetime,
         if 'Сумма платежа' not in operation:
             continue
         transaction_date = datetime.datetime.strptime(operation['Дата операции'], "%d.%m.%Y %H:%M:%S")
-        if date_start < transaction_date < date_end:
+        if date_start <= transaction_date <= date_end:
             transactions_dict[operation['Категория']].append(operation['Сумма платежа'])
 
     if not transactions_dict:
@@ -44,7 +45,7 @@ def get_transactions_in_date_range(date_start: datetime.datetime,
         elif amount < 0:
             expenses_dict[category] = amount
     transactions_list = [expenses_dict, income_dict]
-    return transactions_list
+    return transactions_list, operations_dict
 
 def expenses_in_date_range(transactions_list: list[dict]) -> dict:
     """
@@ -128,3 +129,9 @@ def income_in_date_range(transactions_list: list[dict]) -> dict:
             }
 
     return result_income_dict
+
+
+if __name__ == "__main__":
+    date_start = datetime.datetime(2021, 11, 1, 0, 0)
+    date_end = datetime.datetime(2021, 11, 5, 14, 33, 34)
+    pprint.pprint(get_transactions_in_date_range(date_start, date_end), width=60)

@@ -3,7 +3,8 @@ import datetime
 from pandas import DataFrame
 
 from src.utils import PATH_TO_EXCEL_FILE, read_excel_file, writing_dataframe_to_dict, get_date_range, \
-    get_transactions_in_date_range, expenses_in_date_range
+    get_transactions_in_date_range, expenses_in_date_range, income_in_date_range, read_json_file, \
+    PATH_TO_USER_SETTINGS_FILE, get_currencies_rate, get_stocks_price
 from collections import Counter, defaultdict
 
 
@@ -32,6 +33,15 @@ def events(date: str, date_range: str= "M") -> dict:
     date_start, date_end = get_date_range(date, date_range)
     tansactions_list = get_transactions_in_date_range(date_start, date_end)
     expenses_dict = expenses_in_date_range(tansactions_list)
+    income_dict = income_in_date_range(tansactions_list)
+    user_settings = read_json_file(PATH_TO_USER_SETTINGS_FILE)
+    currencies_rate = get_currencies_rate(user_settings)
+    stocks_price = get_stocks_price(user_settings)
+    result_dict = defaultdict(list)
+    result_dict["expenses"] = expenses_dict
+    result_dict["income"] = income_dict
+    result_dict["currency_rates"] = currencies_rate
+    result_dict["stocks_price"] = stocks_price
 
     return expenses_dict
 if __name__ == "__main__":

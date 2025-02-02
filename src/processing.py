@@ -20,16 +20,22 @@ def get_transactions_in_date_range(date_start: datetime.datetime,
     for operation in operations_dict:
         if 'Дата операции' not in operation:
             continue
-        if 'Категория' not in operation:
+        elif 'Категория' not in operation or not operation['Категория']:
             operation['Категория'] = "Неизвестная категория"
-        if 'Сумма платежа' not in operation:
+        elif 'Сумма платежа' not in operation:
             continue
-        transaction_date = datetime.datetime.strptime(operation['Дата операции'], "%d.%m.%Y %H:%M:%S")
+        elif type(operation['Сумма платежа']) is not float:
+            continue
+        try:
+            transaction_date = datetime.datetime.strptime(operation['Дата операции'], "%d.%m.%Y %H:%M:%S")
+        except Exception as error_message:
+            print("Неправильный формат даты в списке транзакций")
+            continue
         if date_start <= transaction_date <= date_end:
             transactions_dict[operation['Категория']].append(operation['Сумма платежа'])
 
     if not transactions_dict:
-        print("В данном диапазоне времени нет транзакций, удовлетворяющих условиям поиска")
+        print("\nВ данном диапазоне времени нет транзакций, удовлетворяющих условиям поиска")
         return [{}]
     # Складываю суммы операций по категориям
     category_dict = defaultdict(float)
@@ -45,7 +51,7 @@ def get_transactions_in_date_range(date_start: datetime.datetime,
         elif amount < 0:
             expenses_dict[category] = amount
     transactions_list = [expenses_dict, income_dict]
-    return transactions_list, operations_dict
+    return transactions_list
 
 def expenses_in_date_range(transactions_list: list[dict]) -> dict:
     """
@@ -53,9 +59,20 @@ def expenses_in_date_range(transactions_list: list[dict]) -> dict:
     словарь расходов и словарь поступлений.
     Возвращает словарь с расходами за указанный период
     """
+    if not transactions_list:
+        print("\nНет транзакций за указанный период времени")
+        return {}
+    elif type(transactions_list) is not list:
+        print("\nНеправильные данные переданы вместо списка с транзакциями")
+        return {}
+
     all_expenses = defaultdict(int)
     all_expenses, _ = transactions_list
-    # Посчитал общую стоимость расходов за заданный период
+
+    if type(all_expenses) is not defaultdict:
+        print("\nНеправильные данные переданы вместо словаря с расходами")
+        return {}
+    # Считаю общую стоимость расходов за заданный период
     all_expenses_tuple = all_expenses.items()
     total_amount = sum([expense[1]
                         for expense in all_expenses_tuple])
@@ -106,8 +123,20 @@ def income_in_date_range(transactions_list: list[dict]) -> dict:
     словарь расходов и словарь поступлений.
     Возвращает словарь с поступлениями за указанный период
     """
+    if not transactions_list:
+        print("\nНет транзакций за указанный период времени")
+        return {}
+    elif type(transactions_list) is not list:
+        print("\nНеправильные данные переданы вместо списка с транзакциями")
+        return {}
+
     all_income = defaultdict(int)
     _, all_income = transactions_list
+
+    if type(all_income) is not defaultdict:
+        print("\nНеправильные данные переданы вместо словаря с расходами")
+        return {}
+
     # Посчитал общую стоимость расходов за заданный период
     all_income_tuple = all_income.items()
     total_amount = sum([expense[1]

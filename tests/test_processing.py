@@ -1,8 +1,10 @@
 import datetime
+from unittest.mock import patch
 
 import pytest
-
-from src.processing import get_transactions_in_date_range
+import pandas as pd
+from src.processing import get_transactions_in_date_range, expenses_in_date_range, income_in_date_range
+from src.utils import PATH_TO_EXCEL_FILE
 
 
 def test_get_transactions_in_date_range() -> None:
@@ -19,52 +21,82 @@ def test_get_transactions_in_date_range() -> None:
               {'Другое': 10000}]
 
 
-@pytest.mark.parametrize(
-    "operations, expected", [
-    ({'MCC': 5499.0,
-   'Валюта операции': 'RUB',
-   'Валюта платежа': 'RUB',
-   'Дата операции': '03.01.2018 15:03:35',
-   'Дата платежа': '04.01.2018',
-   'Категория': 'Супермаркеты',
-   'Кэшбэк': None,
-   'Номер карты': '*7197',
-   'Округление на инвесткопилку': 0,
-   'Описание': 'Magazin 25',
-   'Статус': 'OK',
-   }, [{}]),
-    ({'MCC': 5499.0,
-   'Бонусы (включая кэшбэк)': 1,
-   'Валюта операции': 'RUB',
-   'Валюта платежа': 'RUB',
-   'Дата операции': '03.01.2018 15:03:35',
-   'Дата платежа': '04.01.2018',
-   'Кэшбэк': None,
-   'Номер карты': '*7197',
-   'Округление на инвесткопилку': 0,
-   'Описание': 'Magazin 25',
-   'Статус': 'OK',
-   'Сумма операции': -73.06,
-   'Сумма операции с округлением': 73.06,
-   'Сумма платежа': -73.06}, [{"Неизвестная категория": -73}]),
-    ({'MCC': 5499.0,
-   'Бонусы (включая кэшбэк)': 1,
-   'Валюта операции': 'RUB',
-   'Валюта платежа': 'RUB',
-   'Категория': 'Супермаркеты',
-   'Кэшбэк': None,
-   'Номер карты': '*7197',
-   'Округление на инвесткопилку': 0,
-   'Описание': 'Magazin 25',
-   'Статус': 'OK',
-   'Сумма операции': -73.06,
-   'Сумма операции с округлением': 73.06,
-   'Сумма платежа': -73.06}, [{}])
-        ]
-    )
-def test_get_transactions_in_date_range_wrong_data(operations: list[dict], expected: list[dict]) -> None:
-    """ Проверяет работу функции def get_transactions_in_date_range"""
+@patch("pandas.read_excel")
+def test_get_transactions_in_date_range_wrong_data(mock_read) -> None:
+    """
+    Проверяет работу функции def get_transactions_in_date_range,
+    когда в списке банковских операций отсутствуют нужные ключи
+    """
     date_start = datetime.datetime(2021, 11, 1, 0, 0)
     date_end = datetime.datetime(2021, 11, 5, 14, 33, 34)
+    mock_read.return_value = pd.DataFrame({"Дата операции": ['03.11.2021 15:03:35',
+                                                             "",
+                                                             '03.11.2021 15:03:35'],
+                                           "Категория": ["", "Супермаркеты", "Супермаркеты"],
+                                           "Сумма платежа": [-73.06, -73.06, ""]})
 
-    assert get_transactions_in_date_range(date_start, date_end) == expected
+    assert get_transactions_in_date_range(date_start, date_end) ==  [{'Неизвестная категория': -73}, {}]
+    mock_read.assert_called_once_with(PATH_TO_EXCEL_FILE)
+
+
+def test_expenses_in_date_range() -> None:
+    """ Проверяет работу функции expenses_in_date_range"""
+    date_start = datetime.datetime(2021, 11, 1, 0, 0)
+    date_end = datetime.datetime(2021, 11, 5, 14, 33, 34)
+    transactions_list = get_transactions_in_date_range(date_start, date_end)
+    assert expenses_in_date_range(transactions_list) == {
+        'total_amount': -8541,
+        'main':
+        [{'amount': 5548, 'category': 'Каршеринг'},
+          {'amount': 2029, 'category': 'Супермаркеты'},
+          {'amount': 482, 'category': 'Косметика'},
+          {'amount': 402, 'category': 'Фастфуд'},
+          {'amount': 60, 'category': 'Местный транспорт'},
+          {'amount': 20, 'category': 'Связь'},
+          {'amount': 0, 'category': 'Остальное'}],
+        'transfers_and_cash':
+            [{'amount': 0, 'category': 'Переводы'},
+            {'amount': 0, 'category': 'Наличные'}]
+        }
+
+
+@pytest.mark.parametrize(
+    "transactions", [
+    ([]),
+    'string',
+    ([{}, {'amount': 5548, 'category': 'Переводы'}]),
+    ([{1, 2, 3}, {'amount': 5548, 'category': 'Переводы'}])])
+def test_expenses_in_date_range_wrong_data(transactions: any) -> None:
+        """
+        Проверяет работу функции expenses_in_date_range,
+        когда на вход переданы неправильные данные
+        """
+        assert expenses_in_date_range(transactions) == {}
+
+
+def test_income_in_date_range() -> None:
+    """ Проверяет работу функции income_in_date_range"""
+    date_start = datetime.datetime(2021, 11, 1, 0, 0)
+    date_end = datetime.datetime(2021, 11, 25, 14, 33, 34)
+    transactions_list = get_transactions_in_date_range(date_start, date_end)
+    assert income_in_date_range(transactions_list) == {
+        'total_amount': 2896,
+        'main': [{'amount': 200, 'category': 'Пополнения'},
+          {'amount': 1086, 'category': 'Другое'},
+          {'amount': 1610, 'category': 'Бонусы'}]
+                }
+
+
+@pytest.mark.parametrize(
+    "transactions", [
+    ([]),
+    'string',
+    ([{'amount': 5548, 'category': 'Переводы'}, {}]),
+    ([{'amount': 5548, 'category': 'Переводы'}, {1, 2, 3}])])
+def test_income_in_date_range_wrong_data(transactions: any) -> None:
+        """
+        Проверяет работу функции income_in_date_range,
+        когда на вход переданы неправильные данные
+        """
+
+        assert expenses_in_date_range(transactions) == {}

@@ -4,6 +4,7 @@ import requests
 from dotenv import load_dotenv
 
 from src.utils import BASE_DIR
+from tests.conftest import data_for_test_get_get_currencies_rate
 
 # Задаю путь к JSON-файлу с запросами валют и акций
 PATH_TO_USER_SETTINGS_FILE = os.path.join(BASE_DIR, "user_settings.json")
@@ -13,41 +14,36 @@ BASE_URL = "https://api.apilayer.com/exchangerates_data/convert"
 STOCK_URL = "https://www.alphavantage.co/query"
 
 
-# def get_currencies_rate(currencies_and_stocks: dict) -> list(dict):
-#     """
-#     Принимает на вход уть к файлу с запросом валют и акций.
-#     Возвращает актуальный курс для запрошенных валют и акций
-#     """
-#     currencies_list = currencies_and_stocks["user_currencies"]
-#     currencies_rate = []
-#     for currency in currencies_list:
-#
-#         load_dotenv()
-#         apikey = os.getenv("API_KEY")
-#         headers = {"apikey": f"{apikey}"}
-#         params = {"to": "RUB", "from": currency, "amount": 1}
-#         try:
-#             response = requests.get(BASE_URL, headers=headers, params=params)
-#         except requests.exceptions.RequestException:
-#             print("Ошибка при работе с HTTP запросом")
-#             return None
-#
-#         if response.status_code != 200:
-#             print(f"Получены неправильные данные от API. Status_code = {response.status_code}")
-#             return None
-#         answer_api = response.json()
-#         try:
-#             currency_rate = float("{:.2f}".format(answer_api["result"]))
-#         except Exception as error_text:
-#             print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
-#             return None
-#         currencies_rate.append((currency, currency_rate))
-#
-#         currencies_rate_list = [{"currency": currency, "rate": rate}
-#                               for currency, rate in currencies_rate]
-#     return currencies_rate_list
-# #
-#
+def get_currency_rate(currency: str) -> dict:
+    """
+    Принимает на вход уть к файлу с запросом валют и акций.
+    Возвращает актуальный курс для запрошенных валют и акций
+    """
+    load_dotenv()
+    apikey = os.getenv("API_KEY")
+    headers = {"apikey": f"{apikey}"}
+    params = {"to": "RUB", "from": currency, "amount": 1}
+    try:
+        response = requests.get(BASE_URL, headers=headers, params=params)
+    except requests.exceptions.RequestException:
+        print("Ошибка при работе с HTTP запросом")
+        return {}
+
+    if response.status_code != 200:
+        print(f"Получены неправильные данные от API. Status_code = {response.status_code}")
+        return {}
+    answer_api = response.json()
+    try:
+        currency_rate = answer_api["result"]
+        # currency_rate = float("{:.2f}".format(answer_api["result"]))
+    except Exception as error_text:
+        print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
+        return {}
+    currencies_rate_dict = {"currency": currency, "rate": currency_rate}
+
+    return currencies_rate_dict
+
+
 # def get_stocks_price(currencies_and_stocks: dict) -> list(dict):
 #     """
 #     Принимает на вход уть к файлу с запросом валют и акций.
@@ -92,3 +88,7 @@ STOCK_URL = "https://www.alphavantage.co/query"
 #
 #
 #     return stocks_price_list
+
+
+if __name__ == "__main__":
+    print(get_currency_rate("USD"))

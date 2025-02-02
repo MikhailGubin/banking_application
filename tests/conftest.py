@@ -13,7 +13,7 @@ def data_for_test_get_get_currencies_rate() -> dict:
   "user_currencies": ["USD", "EUR"],
   "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
         }
-    return currencies_and_stocks, headers, params
+    return currencies_and_stocks
 
 
 def get_operations_list()-> list:

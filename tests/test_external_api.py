@@ -1,68 +1,65 @@
+import os
 from unittest.mock import patch
 
-import pytest
+from dotenv import load_dotenv
 
-from src.external_api import BASE_URL
+from src.external_api import BASE_URL, get_currency_rate
 
 
-def test_get_currencies_rate(currencies_and_stocks: dict) -> None:
+def test_get_currency_rate() -> None:
     """
     Проверяет работу функции get_amount_of_transaction
     при конвертации валюты из долларов в рубли
     """
 
-    with patch("requests.get") as mock_get:
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = [{
-            "success": True,
-            "query": {"from": "USD", "to": "RUB", "amount": 1},
-            "info": {"timestamp": 1737148204, "rate": 102.500986},
-            "date": "2025-01-17",
-            "result": 102.500986,
-        },
-            {
-                "success": True,
-                "query": {"from": "EUR", "to": "RUB", "amount": 1},
-                "info": {"timestamp": 1737148204, "rate": 102.500986},
-                "date": "2025-01-17",
-                "result": 102.500986,
-            }
-        ]
-        # assert test_get_currencies_rate((currencies_and_stocks) == []
-        # mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
-
-
-def test_get_amount_of_transaction_eur_to_rub(data_for_test_get_amount_of_transaction: tuple) -> None:
-    """
-    Проверяет работу функции get_amount_of_transaction
-    при конвертации валюты из евро в рубли
-    """
-    transaction, headers, params = data_for_test_get_amount_of_transaction
-    # Функция data_for_test_get_amount_of_transaction находится в модуле conftest.py
-    transaction_eur = {
-        "id": 939719570,
-        "state": "EXECUTED",
-        "date": "2018-06-30T02:08:58.425572",
-        "operationAmount": {"amount": "9824.07", "currency": {"name": "EUR", "code": "EUR"}},
-        "description": "Перевод организации",
-        "from": "Счет 75106830613657916952",
-        "to": "Счет 11776614605963066702",
-    }
-    params["from"] = "EUR"
-    params["amount"] = "1"
-
-    with patch("requests.get") as mock_get:
+    with (patch("requests.get") as mock_get):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {
             "success": True,
-            "query": {"from": "EUR", "to": "RUB", "amount": 9824.07},
-            "info": {"timestamp": 1736973004, "rate": 102.502027},
+            "query": {"from": "USD", "to": "RUB", "amount": 1},
+            "info": {"timestamp": 1738518196, "rate": 98.624849},
             "date": "2025-01-15",
-            "result": 1006987.08839,
+            "result": 98.624849,
         }
-        assert test_get_currencies_rate(transaction_eur) == 1006987.09
+        load_dotenv()
+        apikey = os.getenv("API_KEY")
+        headers = {"apikey": f"{apikey}"}
+        params = {"to": "RUB", "from": "USD", "amount": 1}
+        assert get_currency_rate("USD") == {'currency': 'USD', 'rate': 98.624849}
         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
 
+
+# def test_get_amount_of_transaction_eur_to_rub(data_for_test_get_amount_of_transaction: tuple) -> None:
+#     """
+#     Проверяет работу функции get_amount_of_transaction
+#     при конвертации валюты из евро в рубли
+#     """
+#     transaction, headers, params = data_for_test_get_amount_of_transaction
+#     # Функция data_for_test_get_amount_of_transaction находится в модуле conftest.py
+#     transaction_eur = {
+#         "id": 939719570,
+#         "state": "EXECUTED",
+#         "date": "2018-06-30T02:08:58.425572",
+#         "operationAmount": {"amount": "9824.07", "currency": {"name": "EUR", "code": "EUR"}},
+#         "description": "Перевод организации",
+#         "from": "Счет 75106830613657916952",
+#         "to": "Счет 11776614605963066702",
+#     }
+#     params["from"] = "EUR"
+#     params["amount"] = "1"
+#
+#     with patch("requests.get") as mock_get:
+#         mock_get.return_value.status_code = 200
+#         mock_get.return_value.json.return_value = {
+#             "success": True,
+#             "query": {"from": "EUR", "to": "RUB", "amount": 9824.07},
+#             "info": {"timestamp": 1736973004, "rate": 102.502027},
+#             "date": "2025-01-15",
+#             "result": 1006987.08839,
+#         }
+#         assert test_get_currency_rate(transaction_eur) == 1006987.09
+#         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
+#
 
 # def test_get_amount_of_transaction_failed_request(data_for_test_get_amount_of_transaction: tuple) -> None:
 #     """

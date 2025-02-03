@@ -1,17 +1,18 @@
 import os
+import pprint
 
 import requests
 from dotenv import load_dotenv
 
 from src.utils import BASE_DIR
-from tests.conftest import data_for_test_get_get_currencies_rate
+
 
 # Задаю путь к JSON-файлу с запросами валют и акций
 PATH_TO_USER_SETTINGS_FILE = os.path.join(BASE_DIR, "user_settings.json")
 # URL для сайта Exchange Rates Data API
 BASE_URL = "https://api.apilayer.com/exchangerates_data/convert"
 # URL для сайта Exchange Rates Data API
-STOCK_URL = "https://www.alphavantage.co/query"
+STOCK_URL = "https://api.twelvedata.com/time_series"
 
 
 def get_currency_rate(currency: str) -> dict:
@@ -34,8 +35,8 @@ def get_currency_rate(currency: str) -> dict:
         return {}
     answer_api = response.json()
     try:
-        currency_rate = answer_api["result"]
-        # currency_rate = float("{:.2f}".format(answer_api["result"]))
+        # currency_rate = answer_api["result"]
+        currency_rate = float("{:.2f}".format(answer_api["result"]))
     except Exception as error_text:
         print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
         return {}
@@ -44,51 +45,40 @@ def get_currency_rate(currency: str) -> dict:
     return currencies_rate_dict
 
 
-# def get_stocks_price(currencies_and_stocks: dict) -> list(dict):
-#     """
-#     Принимает на вход уть к файлу с запросом валют и акций.
-#     Возвращает актуальный курс для запрошенных валют и акций
-#     """
-#     stocks_list = currencies_and_stocks["user_stocks"]
-#     stocks_price = []
-#     for stock in stocks_list:
-#         # function=TIME_SERIES_DAILY&symbol=TSCO.LON&outputsize=full&apikey=demo
-#         #https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&apikey=demo
-#         # https: // www.alphavantage.co / query?function = TIME_SERIES_DAILY & symbol = TSCO.LON &
-#         # outputsize = full & apikey = demo
-#         # https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol=IBM&apikey=demo
-#         # https://cloud.iexapis.com/stable/stock/{symbol}/quote
-#
-#         load_dotenv()
-#         apikey = os.getenv("API_KEY_ALPHA_VANTAGE")
-#         # apikey = os.getenv("API_KEY")
-#         headers = {"apikey": f"{apikey}"}
-#         params = {"function": "TIME_SERIES_WEEKLY", "symbol": stock}
-#         try:
-#             response = requests.get(STOCK_URL, headers=headers, params=params)
-#
-#         except requests.exceptions.RequestException:
-#             print("Ошибка при работе с HTTP запросом")
-#             return None
-#
-#         if response.status_code != 200:
-#             print(f"Получены неправильные данные от API. Status_code = {response.status_code}")
-#             return None
-#         answer_api = response.json()
-#         try:
-#             # stock_price = answer_api
-#             stock_price = answer_api["Weekly Time Series"]["2025-01-31"]["4. close"]
-#         except Exception as error_text:
-#             print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
-#             return None
-#         stocks_price.append((stock, round(float(stock_price), 2)))
-#
-#     stocks_price_list = [{"stock": stock, "price": price}
-#                                 for stock, price in stocks_price]
-#
-#
-#     return stocks_price_list
+def get_stocks_price(stock: str) -> dict:
+    """
+    Принимает на вход уть к файлу с запросом валют и акций.
+    Возвращает актуальный курс для запрошенных валют и акций
+    """
+
+    load_dotenv()
+    apikey_stock = os.getenv("API_KEY_TWELVE_DATA")
+    # headers = {"apikey": f"{apikey_stock}"}
+    # params = {'symbol': stock, 'interval': '1h'}
+    try:
+        # response = requests.get(STOCK_URL, params=params, headers=headers)
+        response = requests.get(f"https://api.twelvedata.com/time_series?symbol={stock}&interval=1h&"
+                                f"apikey={apikey_stock}")
+    except requests.exceptions.RequestException:
+        print("Ошибка при работе с HTTP запросом")
+        return {}
+
+    if response.status_code != 200:
+        print(f"Получены неправильные данные от API. Status_code = {response.status_code}")
+        return {}
+    answer_api = response.json()
+    try:
+        # stock_price = answer_api
+        stock_price = float(answer_api['values'][0]['close'])
+    except Exception as error_text:
+        print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
+        return {}
+
+    stock_price_dict = {"stock": stock, "price": round(stock_price, 2)}
+
+    return stock_price_dict
 
 
 if __name__ == "__main__":
-    print(get_currency_rate("USD"))
+    # print(get_currency_rate("USD"))
+    pprint.pprint(get_stocks_price('AAPL'), width=60)

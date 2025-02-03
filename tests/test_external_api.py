@@ -1,17 +1,15 @@
-import os
+import pytest
 from unittest.mock import patch
-
-from dotenv import load_dotenv
-
-from src.external_api import BASE_URL, get_currency_rate
+from src.external_api import BASE_URL, get_currency_rate, get_stocks_price, STOCK_URL
 
 
-def test_get_currency_rate() -> None:
+def test_get_currency_rate(data_for_test_get_currency_rate: tuple) -> None:
     """
-    Проверяет работу функции get_amount_of_transaction
+    Проверяет работу функции get_currency_rate
     при конвертации валюты из долларов в рубли
     """
-
+    # Функция data_for_test_get_currency_rate находится в модуле conftest.py
+    headers, params = data_for_test_get_currency_rate
     with (patch("requests.get") as mock_get):
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {
@@ -21,72 +19,109 @@ def test_get_currency_rate() -> None:
             "date": "2025-01-15",
             "result": 98.624849,
         }
-        load_dotenv()
-        apikey = os.getenv("API_KEY")
-        headers = {"apikey": f"{apikey}"}
-        params = {"to": "RUB", "from": "USD", "amount": 1}
-        assert get_currency_rate("USD") == {'currency': 'USD', 'rate': 98.624849}
+
+        assert get_currency_rate("USD") == {'currency': 'USD', 'rate': 98.62}
         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
 
 
-# def test_get_amount_of_transaction_eur_to_rub(data_for_test_get_amount_of_transaction: tuple) -> None:
-#     """
-#     Проверяет работу функции get_amount_of_transaction
-#     при конвертации валюты из евро в рубли
-#     """
-#     transaction, headers, params = data_for_test_get_amount_of_transaction
-#     # Функция data_for_test_get_amount_of_transaction находится в модуле conftest.py
-#     transaction_eur = {
-#         "id": 939719570,
-#         "state": "EXECUTED",
-#         "date": "2018-06-30T02:08:58.425572",
-#         "operationAmount": {"amount": "9824.07", "currency": {"name": "EUR", "code": "EUR"}},
-#         "description": "Перевод организации",
-#         "from": "Счет 75106830613657916952",
-#         "to": "Счет 11776614605963066702",
-#     }
-#     params["from"] = "EUR"
-#     params["amount"] = "1"
-#
-#     with patch("requests.get") as mock_get:
-#         mock_get.return_value.status_code = 200
-#         mock_get.return_value.json.return_value = {
-#             "success": True,
-#             "query": {"from": "EUR", "to": "RUB", "amount": 9824.07},
-#             "info": {"timestamp": 1736973004, "rate": 102.502027},
-#             "date": "2025-01-15",
-#             "result": 1006987.08839,
-#         }
-#         assert test_get_currency_rate(transaction_eur) == 1006987.09
-#         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
-#
+def test_get_currency_rate_failed_request(data_for_test_get_currency_rate: tuple) -> None:
+    """
+    Проверяет работу функции get_currency_rate при неправильном запросе к API
+    """
+    # Функция data_for_test_get_currency_rate находится в модуле conftest.py
+    headers, params = data_for_test_get_currency_rate
 
-# def test_get_amount_of_transaction_failed_request(data_for_test_get_amount_of_transaction: tuple) -> None:
-#     """
-#     Проверяет работу функции get_amount_of_transaction
-#     при неправильном запросе к API
-#     """
-#     transaction, headers, params = data_for_test_get_amount_of_transaction
-#     # Функция data_for_test_get_amount_of_transaction находится в модуле conftest.py
-#     with patch("requests.get") as mock_get:
-#         mock_get.return_value.status_code = 400
-#         assert get_amount_of_transaction(transaction) is None
-#         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
-#
-#
-# @pytest.mark.parametrize("wrong_http_answer", [{"result": ""}, "string"])
-# def test_get_amount_of_transaction_wrong_api_answer(
-#     data_for_test_get_amount_of_transaction: tuple, wrong_http_answer: Any
-# ) -> None:
-#     """
-#     Проверяет работу функции get_amount_of_transaction,
-#     если полученный ответ от сервера не является корректным
-#     HTTP-ответом
-#     """
-#     transaction, headers, params = data_for_test_get_amount_of_transaction
-#     # Функция data_for_test_get_amount_of_transaction находится в модуле conftest.py
-#     with patch("requests.get") as mock_get:
-#         mock_get.return_value.status_code = 200
-#         mock_get.return_value.json.return_value = wrong_http_answer
-#         assert get_amount_of_transaction(transaction) is None
-#         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.status_code = 400
+        assert get_currency_rate("USD") == {}
+        mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
+
+
+@pytest.mark.parametrize("wrong_http_answer", {"result": ""})
+def test_get_currency_rate_wrong_api_answer(
+    data_for_test_get_currency_rate: tuple, wrong_http_answer: any) -> None:
+    """
+    Проверяет работу функции get_currency_rate,
+    если полученный ответ от сервера не является корректным
+    HTTP-ответом
+    """
+    # Функция data_for_test_get_currency_rate находится в модуле conftest.py
+    headers, params = data_for_test_get_currency_rate
+
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = wrong_http_answer
+        assert get_currency_rate("USD") == {}
+        mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
+
+
+def test_get_stocks_price(data_for_test_get_stocks_price: tuple) -> None:
+    """
+    Проверяет работу функции get_stocks_price
+    при конвертации валюты из долларов в рубли
+    """
+    # Функция data_for_test_get_stocks_price находится в модуле conftest.py
+    apikey_stock = data_for_test_get_stocks_price
+    with (patch("requests.get") as mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+        'meta': {'currency': 'USD',
+          'exchange': 'NASDAQ',
+          'exchange_timezone': 'America/New_York',
+          'interval': '1h',
+          'mic_code': 'XNGS',
+          'symbol': 'AAPL',
+          'type': 'Common Stock'},
+        'status': 'ok',
+        'values': [{'close': '228.31',
+             'datetime': '2025-02-03 14:30:00',
+             'high': '228.52',
+             'low': '228.31',
+             'open': '228.48',
+             'volume': '6138'},
+            {'close': '228.41',
+             'datetime': '2025-02-03 13:30:00',
+             'high': '228.825',
+             'low': '226.895',
+             'open': '226.91',
+             'volume': '207801'}]
+            }
+
+        assert get_stocks_price("APPL") == {'stock': 'APPL', 'price': 228.31}
+        mock_get.assert_called_once_with(f"https://api.twelvedata.com/time_series?symbol=APPL&interval=1h&"
+                                f"apikey={apikey_stock}")
+
+
+def test_get_stocks_price_failed_request(data_for_test_get_stocks_price: tuple) -> None:
+    """
+    Проверяет работу функции get_currency_rate при неправильном запросе к API
+    """
+    # Функция data_for_test_get_stocks_price находится в модуле conftest.py
+    apikey_stock = data_for_test_get_stocks_price
+
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.status_code = 400
+        assert get_stocks_price("APPL") == {}
+        mock_get.assert_called_once_with(f"https://api.twelvedata.com/time_series?symbol=APPL&interval=1h&"
+                                f"apikey={apikey_stock}")
+
+
+@pytest.mark.parametrize("wrong_http_answer",
+                         {'values': [{'close': ''}]}
+                         )
+def test_get_stocks_price_wrong_api_answer(
+    data_for_test_get_stocks_price: tuple, wrong_http_answer: any) -> None:
+    """
+    Проверяет работу функции get_currency_rate,
+    если полученный ответ от сервера не является корректным
+    HTTP-ответом
+    """
+    # Функция data_for_test_get_stocks_price находится в модуле conftest.py
+    apikey_stock = data_for_test_get_stocks_price
+
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = wrong_http_answer
+        assert get_stocks_price("APPL") == {}
+        mock_get.assert_called_once_with(f"https://api.twelvedata.com/time_series?symbol=APPL&interval=1h&"
+                                f"apikey={apikey_stock}")

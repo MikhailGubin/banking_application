@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 import pytest
 import pandas as pd
-from src.processing import get_transactions_in_date_range, expenses_in_date_range, income_in_date_range
-from src.utils import PATH_TO_EXCEL_FILE
+from src.processing import get_transactions_in_date_range, expenses_in_date_range, income_in_date_range, \
+    PATH_TO_EXCEL_FILE
 
 
 def test_get_transactions_in_date_range() -> None:

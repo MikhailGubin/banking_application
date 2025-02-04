@@ -1,30 +1,15 @@
 import datetime
 import os
-from typing import Dict, List
 
-from pandas import DataFrame
 
+from src.external_api import get_currency_rate, get_stocks_price
+from src.processing import get_transactions_in_date_range, expenses_in_date_range, income_in_date_range
+from src.readers import read_json_file
 
 # Получаю абсолютный путь к корневой директории проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Задаю путь к Excel-файлу с транзакциями
-PATH_TO_EXCEL_FILE = os.path.join(BASE_DIR, "data", "operations.xlsx")
-
-
-def writing_dataframe_to_dict(df_excel_file: DataFrame) -> List[Dict]:
-    """
-    Считывает финансовые операций из Excel-файла,
-    выдаёт объект DataFrame список словарей с транзакциями
-    """
-    try:
-        transactions_dict = df_excel_file.to_dict(orient="records")
-    except Exception as error_message:
-        print(f"\nВозникла ошибка при записи содержимого Excel-файла в словарь. Текст ошибки: \n{error_message}")
-        return [{}]
-    if not transactions_dict:
-        print("\nВ Excel-файле нет данных")
-        return [{}]
-    return transactions_dict
+# Задаю путь к JSON-файлу с запросами валют и акций
+PATH_TO_USER_SETTINGS_FILE = os.path.join(BASE_DIR, "user_settings.json")
 
 
 def get_date_range(date: str, date_range: str= "M") -> tuple | None:
@@ -70,3 +55,36 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
             date_start = date_end.replace(month=(month_date_end - 3), day=1, hour=0, minute=0, second=0, microsecond=0)
 
     return date_start, date_end
+
+
+def get_json_answer(date: str, date_range: str= "M") -> list[dict]:
+    """ Возвращает JSON-ответ для модуля views.py """
+    try:
+        date_start, date_end = get_date_range(date, date_range)
+        transactions_list = get_transactions_in_date_range(date_start, date_end)
+        expenses_dict = expenses_in_date_range(transactions_list)
+        income_dict = income_in_date_range(transactions_list)
+
+        user_settings = read_json_file(PATH_TO_USER_SETTINGS_FILE)
+
+        currencies_list = []
+        for currency in user_settings["user_currencies"]:
+            currencies_list.append(get_currency_rate(currency))
+
+        stocks_list = []
+        for stock in user_settings["user_stocks"]:
+            stocks_list.append(get_stocks_price(stock))
+
+        json_answer = {"expenses": expenses_dict, "income": income_dict, "currency_rates": currencies_list,
+                       "stock_prices": stocks_list}
+    except Exception as error_message:
+        print(f"Возникла ошибка. Текст ошибки: \n{error_message}")
+        return [{}]
+    if json_answer == {}:
+        print("Нет данных")
+        return [{}]
+    return [json_answer]
+
+
+if __name__ == "__main__":
+    print(get_json_answer("25.11.2021 14:33:34", "M"))

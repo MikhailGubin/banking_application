@@ -4,11 +4,7 @@ import pprint
 import requests
 from dotenv import load_dotenv
 
-from src.utils import BASE_DIR
 
-
-# Задаю путь к JSON-файлу с запросами валют и акций
-PATH_TO_USER_SETTINGS_FILE = os.path.join(BASE_DIR, "user_settings.json")
 # URL для сайта Exchange Rates Data API
 BASE_URL = "https://api.apilayer.com/exchangerates_data/convert"
 # URL для сайта Exchange Rates Data API

@@ -3,9 +3,9 @@ from typing import Any
 from unittest.mock import patch, mock_open
 import pandas as pd
 
-from src.external_api import PATH_TO_USER_SETTINGS_FILE
 from src.readers import read_excel_file, read_json_file
-from src.utils import writing_dataframe_to_dict
+from src.utils import PATH_TO_USER_SETTINGS_FILE
+from src.writer import writing_dataframe_to_dict
 
 
 @patch("pandas.read_excel")
@@ -36,7 +36,7 @@ def test_read_json_file() -> None:
     # Функция с данными data_for_read_json_file находится в файле operations_for_tests.py
     assert read_json_file(PATH_TO_USER_SETTINGS_FILE) == {
         "user_currencies": ["USD", "EUR"],
-        "user_stocks": ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
+        "user_stocks": ["AAPL", "AMZN"]
     }
 
 def test_read_json_file_wrong_path() -> None:

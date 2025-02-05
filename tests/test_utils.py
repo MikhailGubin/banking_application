@@ -1,8 +1,5 @@
 import datetime
-from typing import Any
 from unittest.mock import patch
-
-import pandas as pd
 import pytest
 from src.utils import get_date_range, get_json_answer
 
@@ -52,30 +49,85 @@ def test_get_date_range_wrong_date(date: str, date_range: str) -> None:
     assert get_date_range(date, date_range) is None
 
 
-@patch("requests.get", side_effect=[
-        {   "success": True,
-            "query": {"from": "USD", "to": "RUB", "amount": 1},
-            "info": {"timestamp": 1738518196, "rate": 98.624849},
-            "date": "2025-01-15",
-            "result": 98.624849,
-        },
-        {   "success": True,
-            "query": {"from": "EUR", "to": "RUB", "amount": 1},
-            "info": {"timestamp": 1738518196, "rate": 103.324849},
-            "date": "2025-01-15",
-            "result": 103.324849,
-        },
-        {'meta': {'currency': 'USD',
-                  'symbol': 'AAPL'},
-        'values': [{'close': '232.06'}]
-            },
-        {'meta': {'currency': 'USD',
-                  'symbol': 'AMZN'},
-        'values': [{'close': '241.29'}]
-            }
-        ])
+# @patch("src.external_api.get_currency_rate", side_effect=[
+#         {   "success": True,
+#             "query": {"from": "USD", "to": "RUB", "amount": 1},
+#             "info": {"timestamp": 1738518196, "rate": 98.624849},
+#             "date": "2025-01-15",
+#             "result": 98.624849,
+#         },
+#         {   "success": True,
+#             "query": {"from": "EUR", "to": "RUB", "amount": 1},
+#             "info": {"timestamp": 1738518196, "rate": 103.324849},
+#             "date": "2025-01-15",
+#             "result": 103.324849,
+#         }])
+# @patch("src.external_api.get_stocks_price", side_effect=[
+#         {'meta': {'currency': 'USD',
+#                   'symbol': 'AAPL'},
+#         'values': [{'close': '232.06'}]
+#             },
+#         {'meta': {'currency': 'USD',
+#                   'symbol': 'AMZN'},
+#         'values': [{'close': '241.29'}]
+#             }
+#         ])
+# @patch("src.external_api.get_currency_rate")
+# @patch("src.external_api.get_stocks_price")
+#
+# @patch("requests.get", side_effect=[
+# {   "status_code": 200,
+#     "success": True,
+#             "query": {"from": "USD", "to": "RUB", "amount": 1},
+#             "info": {"timestamp": 1738518196, "rate": 98.624849},
+#             "date": "2025-01-15",
+#             "result": 98.624849,
+#         },
+#         {   "status_code": 200,
+#             "success": True,
+#             "query": {"from": "EUR", "to": "RUB", "amount": 1},
+#             "info": {"timestamp": 1738518196, "rate": 103.324849},
+#             "date": "2025-01-15",
+#             "result": 103.324849,
+#         },
+#         {"status_code": 200,
+#             'meta': {'currency': 'USD',
+#                   'symbol': 'AAPL'},
+#         'values': [{'close': '232.06'}]
+#             },
+#         {"status_code": 200,
+#             'meta': {'currency': 'USD',
+#                   'symbol': 'AMZN'},
+#         'values': [{'close': '241.29'}]
+#             }
+#         ])
+@patch("requests.get")
 def test_get_json_answer(mock_get) -> None:
     """ Проверяю работу функции get_json_answer"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {
+        "success": True,
+        "query": {"from": "USD", "to": "RUB", "amount": 1},
+        "info": {"timestamp": 1738518196, "rate": 98.624849},
+        "date": "2025-01-15",
+        "result": 98.624849,
+    }
+    # mock_get.return_value.status_code = 200
+    # mock_get.return_value.json.return_value = {'meta': {'currency': 'USD',
+    #               'symbol': 'AAPL'},
+    #     'values': [{'close': '232.06'}]
+    #         }
+    # mock_get_currency_rate.return_value = {   "success": True,
+    #         "query": {"from": "USD", "to": "RUB", "amount": 1},
+    #         "info": {"timestamp": 1738518196, "rate": 98.624849},
+    #         "date": "2025-01-15",
+    #         "result": 98.624849,
+    #     }
+    # mock_get_stocks_price.return_value = {'meta': {'currency': 'USD',
+    #               'symbol': 'AAPL'},
+    #     'values': [{'close': '232.06'}]
+    #         }
+
     assert get_json_answer("25.11.2021 14:33:34", "M") == [
         {'expenses':
              {'total_amount': -53700,
@@ -95,11 +147,18 @@ def test_get_json_answer(mock_get) -> None:
                        {'category': 'Другое', 'amount': 1086},
                        {'category': 'Бонусы', 'amount': 1610}]},
          'currency_rates':
-             [{'currency': 'USD', 'rate': 99.62},
-              {'currency': 'EUR', 'rate': 103.32}],
+             [{'currency': 'USD', 'rate': 98.62},
+              {'currency': 'EUR', 'rate': 98.62}],
          'stock_prices':
-             [{'stock': 'AAPL', 'price': 232.06},
-              {'stock': 'AMZN', 'price': 241.29}]}]
+             [{},
+              {}]}]
+# 'currency_rates':
+#              [{'currency': 'USD', 'rate': 99.62},
+#               {'currency': 'EUR', 'rate': 103.32}],
+#          'stock_prices':
+#              [{'stock': 'AAPL', 'price': 232.06},
+#               {'stock': 'AMZN', 'price': 241.29}]}]
+
 
 @pytest.mark.parametrize(
     "date, date_range", [

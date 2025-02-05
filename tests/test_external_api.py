@@ -3,25 +3,47 @@ from unittest.mock import patch
 from src.external_api import BASE_URL, get_currency_rate, get_stocks_price, STOCK_URL
 
 
-def test_get_currency_rate(data_for_test_get_currency_rate: tuple) -> None:
+# def test_get_currency_rate(data_for_test_get_currency_rate: tuple) -> None:
+#     """
+#     Проверяет работу функции get_currency_rate
+#     при конвертации валюты из долларов в рубли
+#     """
+#     # Функция data_for_test_get_currency_rate находится в модуле conftest.py
+#     headers, params = data_for_test_get_currency_rate
+#     with (patch("requests.get") as mock_get):
+#         mock_get.return_value.status_code = 200
+#         mock_get.return_value.json.return_value = {
+#             "success": True,
+#             "query": {"from": "USD", "to": "RUB", "amount": 1},
+#             "info": {"timestamp": 1738518196, "rate": 98.624849},
+#             "date": "2025-01-15",
+#             "result": 98.624849,
+#         }
+#
+#         assert get_currency_rate("USD") == {'currency': 'USD', 'rate': 98.62}
+#         mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
+
+
+@patch("requests.get")
+def test_get_currency_rate(mock_get, data_for_test_get_currency_rate: tuple) -> None:
     """
     Проверяет работу функции get_currency_rate
     при конвертации валюты из долларов в рубли
     """
     # Функция data_for_test_get_currency_rate находится в модуле conftest.py
     headers, params = data_for_test_get_currency_rate
-    with (patch("requests.get") as mock_get):
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {
-            "success": True,
-            "query": {"from": "USD", "to": "RUB", "amount": 1},
-            "info": {"timestamp": 1738518196, "rate": 98.624849},
-            "date": "2025-01-15",
-            "result": 98.624849,
-        }
 
-        assert get_currency_rate("USD") == {'currency': 'USD', 'rate': 98.62}
-        mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {
+        "success": True,
+        "query": {"from": "USD", "to": "RUB", "amount": 1},
+        "info": {"timestamp": 1738518196, "rate": 98.624849},
+        "date": "2025-01-15",
+        "result": 98.624849,
+    }
+
+    assert get_currency_rate("USD") == {'currency': 'USD', 'rate': 98.62}
+    mock_get.assert_called_once_with(BASE_URL, headers=headers, params=params)
 
 
 def test_get_currency_rate_failed_request(data_for_test_get_currency_rate: tuple) -> None:

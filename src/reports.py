@@ -32,7 +32,7 @@ def spending_by_category(transactions: pd.DataFrame, category_name: str, date: O
         print("\nПустой датафрейм с транзакциями")
         return [{}]
     try:
-        transactions.fillna(value='', inplace=True)
+        transactions.fillna(value="0", inplace=True)
         transactions_in_date_range = transactions.loc[
         (start_date <= pd.to_datetime(transactions['Дата операции'], format="%d.%m.%Y %H:%M:%S")) &
         (pd.to_datetime(transactions['Дата операции'], format="%d.%m.%Y %H:%M:%S") <= end_date) &
@@ -44,10 +44,3 @@ def spending_by_category(transactions: pd.DataFrame, category_name: str, date: O
 
     banking_operations = writing_dataframe_to_dict(transactions_in_date_range)
     return banking_operations
-
-
-if __name__ == "__main__":
-    date_obj = datetime.datetime.now()
-    date = date_obj.strftime("%d.%m.%Y %H:%M:%S")
-    date = pd.to_datetime(date, format="%d.%m.%Y %H:%M:%S")
-    print(date)

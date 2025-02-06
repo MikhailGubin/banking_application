@@ -11,11 +11,11 @@ from src.utils import get_date_range, get_json_answer
      datetime.datetime(2021, 11, 25, 14, 33, 34))
      ),
     ("25.11.2021 14:33:34", "ALL",
-     (datetime.datetime(2021, 8, 1, 0, 0),
+     (datetime.datetime(2021, 8, 25, 0, 0),
      datetime.datetime(2021, 11, 25, 14, 33, 34))
      ),
         ("25.01.2021 14:33:34", "ALL",
-         (datetime.datetime(2020, 10, 1, 0, 0),
+         (datetime.datetime(2020, 10, 25, 0, 0),
           datetime.datetime(2021, 1, 25, 14, 33, 34))
          ),
     ("1.1.2022 14:33:34", "W",
@@ -49,58 +49,6 @@ def test_get_date_range_wrong_date(date: str, date_range: str) -> None:
     assert get_date_range(date, date_range) is None
 
 
-# @patch("src.external_api.get_currency_rate", side_effect=[
-#         {   "success": True,
-#             "query": {"from": "USD", "to": "RUB", "amount": 1},
-#             "info": {"timestamp": 1738518196, "rate": 98.624849},
-#             "date": "2025-01-15",
-#             "result": 98.624849,
-#         },
-#         {   "success": True,
-#             "query": {"from": "EUR", "to": "RUB", "amount": 1},
-#             "info": {"timestamp": 1738518196, "rate": 103.324849},
-#             "date": "2025-01-15",
-#             "result": 103.324849,
-#         }])
-# @patch("src.external_api.get_stocks_price", side_effect=[
-#         {'meta': {'currency': 'USD',
-#                   'symbol': 'AAPL'},
-#         'values': [{'close': '232.06'}]
-#             },
-#         {'meta': {'currency': 'USD',
-#                   'symbol': 'AMZN'},
-#         'values': [{'close': '241.29'}]
-#             }
-#         ])
-# @patch("src.external_api.get_currency_rate")
-# @patch("src.external_api.get_stocks_price")
-#
-# @patch("requests.get", side_effect=[
-# {   "status_code": 200,
-#     "success": True,
-#             "query": {"from": "USD", "to": "RUB", "amount": 1},
-#             "info": {"timestamp": 1738518196, "rate": 98.624849},
-#             "date": "2025-01-15",
-#             "result": 98.624849,
-#         },
-#         {   "status_code": 200,
-#             "success": True,
-#             "query": {"from": "EUR", "to": "RUB", "amount": 1},
-#             "info": {"timestamp": 1738518196, "rate": 103.324849},
-#             "date": "2025-01-15",
-#             "result": 103.324849,
-#         },
-#         {"status_code": 200,
-#             'meta': {'currency': 'USD',
-#                   'symbol': 'AAPL'},
-#         'values': [{'close': '232.06'}]
-#             },
-#         {"status_code": 200,
-#             'meta': {'currency': 'USD',
-#                   'symbol': 'AMZN'},
-#         'values': [{'close': '241.29'}]
-#             }
-#         ])
 @patch("requests.get")
 def test_get_json_answer(mock_get) -> None:
     """ Проверяю работу функции get_json_answer"""
@@ -112,21 +60,7 @@ def test_get_json_answer(mock_get) -> None:
         "date": "2025-01-15",
         "result": 98.624849,
     }
-    # mock_get.return_value.status_code = 200
-    # mock_get.return_value.json.return_value = {'meta': {'currency': 'USD',
-    #               'symbol': 'AAPL'},
-    #     'values': [{'close': '232.06'}]
-    #         }
-    # mock_get_currency_rate.return_value = {   "success": True,
-    #         "query": {"from": "USD", "to": "RUB", "amount": 1},
-    #         "info": {"timestamp": 1738518196, "rate": 98.624849},
-    #         "date": "2025-01-15",
-    #         "result": 98.624849,
-    #     }
-    # mock_get_stocks_price.return_value = {'meta': {'currency': 'USD',
-    #               'symbol': 'AAPL'},
-    #     'values': [{'close': '232.06'}]
-    #         }
+
 
     assert get_json_answer("25.11.2021 14:33:34", "M") == [
         {'expenses':
@@ -152,12 +86,6 @@ def test_get_json_answer(mock_get) -> None:
          'stock_prices':
              [{},
               {}]}]
-# 'currency_rates':
-#              [{'currency': 'USD', 'rate': 99.62},
-#               {'currency': 'EUR', 'rate': 103.32}],
-#          'stock_prices':
-#              [{'stock': 'AAPL', 'price': 232.06},
-#               {'stock': 'AMZN', 'price': 241.29}]}]
 
 
 @pytest.mark.parametrize(

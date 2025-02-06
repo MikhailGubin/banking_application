@@ -1,5 +1,5 @@
 import os
-import pprint
+
 from collections import defaultdict
 import datetime
 
@@ -164,15 +164,3 @@ def income_in_date_range(transactions_list: list[dict]) -> dict:
             }
 
     return result_income_dict
-
-
-if __name__ == "__main__":
-    # date_start = datetime.datetime(2021, 11, 1, 0, 0)
-    # date_end = datetime.datetime(2021, 11, 5, 14, 33, 34)
-    # pprint.pprint(get_transactions_in_date_range(date_start, date_end), width=60)
-    df_banking_operations = read_excel_file(PATH_TO_EXCEL_FILE)
-    # operations_dict = writing_dataframe_to_dict(df_banking_operations)
-    # pprint.pprint(operations_dict, width=60)
-    pprint.pprint(df_banking_operations, width=60)
-
-    #

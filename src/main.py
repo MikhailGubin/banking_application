@@ -1,3 +1,5 @@
+import pprint
+
 from src.processing import PATH_TO_EXCEL_FILE
 from src.readers import read_excel_file
 from src.reports import spending_by_category
@@ -20,11 +22,26 @@ def main_events() -> list[dict]:
           "ALL - все данные до указанной даты за 3 последних месяца\n")
 
     date_range = input()
-    if date_range not in ["W", "M", "Y", "ALL"]:
+    if date_range.upper() not in ["W", "M", "Y", "ALL"]:
         date_range = "M"
     print(f"Выбран параметр {date_range} для временного диапазона")
 
-    return events(date, date_range)
+    result_events = events(date, date_range)
+
+    if date_range == "W":
+        text_answer = "Данные за неделю, на которую приходится указанная дата"
+    elif date_range == "M":
+        text_answer = "Данные за месяц, на который приходится указанная дата"
+    elif date_range == "Y":
+        text_answer = "Данные за год, на который приходится указанная дата"
+    elif date_range == "Y":
+        text_answer = "Данные за последние 3 месяца от указанной даты"
+
+    pprint.pprint(f"Результаты работы основного приложения:"
+                  f"\nРезультат работы приложения 'События':  "
+                  f"{text_answer}, {date} \n{result_events} ", width=80)
+
+    return result_events
 
 
 def main_investment() -> float:
@@ -38,13 +55,18 @@ def main_investment() -> float:
     transactions = get_transactions_for_investment()
 
     month = input("Введите месяц, для которого рассчитывается отложенная сумма."
-                  "Строка должна быть в формате 'YYYY-MM'")
+                  "\nСтрока должна быть в формате 'YYYY-MM'")
     try:
-        limit = int(input("Введите предел, до которого нужно округлять суммы операций (10 Р/ 50 Р/ 100 Р"))
+        limit = int(input("Введите предел, до которого нужно округлять суммы операций \n(10 Р/ 50 Р/ 100 Р"))
     except Exception as error_text:
         print("Неправильный формат параметра 'предел'")
+    result_investment = investment_bank(month, transactions, limit)
 
-    return investment_bank(month, transactions, limit)
+    pprint.pprint(f"\nРезультат работы приложения 'Инвесткопилка':"
+                  f"\nЗа указанный месяц, {month}, было бы отложено  {result_investment} Р"
+                  f"\n в Инвесткопилку, если округление было бы {limit} Р", width=80)
+
+    return result_investment
 
 def main_spending_by_category() -> list[dict]:
     """ Запускает работу приложения "Траты по категории" для анализа транзакций """
@@ -60,22 +82,13 @@ def main_spending_by_category() -> list[dict]:
           "\nФормат даты должен быть следующим: \nДень.Месяц.Год Часы:Минуты:Секунды'\n")
     transactions = read_excel_file(PATH_TO_EXCEL_FILE)
 
-    
-    return spending_by_category(transactions, category_name, date)
+    result_spending_by_category = spending_by_category(transactions, category_name, date)
 
-
-def main_interface() -> None:
-    """ Запускает общее приложение """
-    json_events = main_events()
-    float_investment = main_investment()
-    json_spending_by_category = main_spending_by_category()
-
-    print(
-        f"Результаты работы основного приложения: "
-        f"\nРезультат работы приложения 'События':  {json_events} "
-        f"\nРезультат работы приложения 'Инвесткопилка':  {float_investment}"
-        f"\nРезультат работы приложения 'Траты по категории':  {json_spending_by_category}"
-    )
+    pprint.pprint(f"\nРезультат работы приложения 'Траты по категории':  "
+                  f"\nЗа последние 3 месяца от указанной даты, {date} "
+                  f"в категории {category_name} были следующие траты"
+                  f"\n{result_spending_by_category}", width=80)
+    return result_spending_by_category
 
 
 if __name__ == "__main__":
@@ -83,10 +96,3 @@ if __name__ == "__main__":
     json_events = main_events()
     float_investment = main_investment()
     json_spending_by_category = main_spending_by_category()
-
-    print(
-        f"Результаты работы основного приложения: "
-        f"\nРезультат работы приложения 'События':  {json_events} "
-        f"\nРезультат работы приложения 'Инвесткопилка':  {float_investment}"
-        f"\nРезультат работы приложения 'Траты по категории':  {json_spending_by_category}"
-          )

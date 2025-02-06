@@ -1,5 +1,3 @@
-import datetime
-
 from src.utils import get_json_answer
 
 

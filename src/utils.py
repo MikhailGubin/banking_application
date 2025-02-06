@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 
 
@@ -10,7 +11,16 @@ from src.readers import read_json_file
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Задаю путь к JSON-файлу с запросами валют и акций
 PATH_TO_USER_SETTINGS_FILE = os.path.join(BASE_DIR, "user_settings.json")
-
+# Задаю путь к файлу utils.log в директории logs
+# LOG_PATH = os.path.join(BASE_DIR, "data", "services.log")
+#
+#
+# logger_utils = logging.getLogger(__name__)
+# file_handler_utils = logging.FileHandler(LOG_PATH, mode="w")
+# file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+# file_handler_utils.setFormatter(file_formatter)
+# logger_utils.addHandler(file_handler_utils)
+# logger_utils.setLevel(logging.DEBUG)
 
 def get_date_range(date: str, date_range: str= "M") -> tuple | None:
     """
@@ -44,15 +54,17 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
         date_start = date_end.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
     elif date_range == 'ALL':
+        day_date_end = date_end.day
         month_date_end = date_end.month
         year_date_end = date_end.year
         if month_date_end < 3:
             date_start = date_end.replace(year=(year_date_end - 1),
                                           month=(month_date_end + 12 - 3),
-                                          day=1, hour=0, minute=0, second=0, microsecond=0)
+                                          day=day_date_end, hour=0, minute=0, second=0, microsecond=0)
         else:
 
-            date_start = date_end.replace(month=(month_date_end - 3), day=1, hour=0, minute=0, second=0, microsecond=0)
+            date_start = date_end.replace(month=(month_date_end - 3), day=day_date_end, hour=0,
+                                          minute=0, second=0, microsecond=0)
 
     return date_start, date_end
 
@@ -84,7 +96,3 @@ def get_json_answer(date: str, date_range: str= "M") -> list[dict]:
         print("Нет данных")
         return [{}]
     return [json_answer]
-
-
-if __name__ == "__main__":
-    print(get_json_answer("25.11.2021 14:33:34", "M"))

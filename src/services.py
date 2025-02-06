@@ -8,17 +8,16 @@ from src.processing import PATH_TO_EXCEL_FILE, BASE_DIR
 from src.readers import read_excel_file
 from src.writer import writing_dataframe_to_dict
 
-
 # Задаю путь к файлу utils.log в директории logs
-LOG_PATH = os.path.join(BASE_DIR, "logs", "utils.log")
+LOG_PATH = os.path.join(BASE_DIR, "data", "services.log")
 
 
-logger_utils = logging.getLogger(__name__)
-file_handler_utils = logging.FileHandler(LOG_PATH, mode="w")
+logger_services = logging.getLogger(__name__)
+file_handler_services = logging.FileHandler(LOG_PATH, mode="w")
 file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-file_handler_utils.setFormatter(file_formatter)
-logger_utils.addHandler(file_handler_utils)
-logger_utils.setLevel(logging.DEBUG)
+file_handler_services.setFormatter(file_formatter)
+logger_services.addHandler(file_handler_services)
+logger_services.setLevel(logging.DEBUG)
 
 
 def get_transactions_for_investment() -> List[Dict[str, Any]]:
@@ -94,10 +93,3 @@ def investment_bank(month: str, transactions: List[Dict[str, Any]], limit: int) 
         print("\nВ 'Инвесткопилку' не удалось ничего отложить в данном месяце")
         return 0
     return round(invest, 2)
-
-if __name__ == "__main__":
-
-    month = '2021-2'
-    # date = datetime.datetime.strptime(month, "%Y-%m")
-    # print(datetime.datetime.strptime(month, "%Y-%m"))
-    print(get_transactions_for_investment())

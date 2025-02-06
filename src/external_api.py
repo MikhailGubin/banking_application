@@ -1,5 +1,4 @@
 import os
-import pprint
 
 import requests
 from dotenv import load_dotenv
@@ -31,7 +30,6 @@ def get_currency_rate(currency: str) -> dict:
         return {}
     answer_api = response.json()
     try:
-        # currency_rate = answer_api["result"]
         currency_rate = float("{:.2f}".format(answer_api["result"]))
     except Exception as error_text:
         print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
@@ -49,10 +47,8 @@ def get_stocks_price(stock: str) -> dict:
 
     load_dotenv()
     apikey_stock = os.getenv("API_KEY_TWELVE_DATA")
-    # headers = {"apikey": f"{apikey_stock}"}
-    # params = {'symbol': stock, 'interval': '1h'}
+
     try:
-        # response = requests.get(STOCK_URL, params=params, headers=headers)
         response = requests.get(f"https://api.twelvedata.com/time_series?symbol={stock}&interval=1h&"
                                 f"apikey={apikey_stock}")
     except requests.exceptions.RequestException:
@@ -73,8 +69,3 @@ def get_stocks_price(stock: str) -> dict:
     stock_price_dict = {"stock": stock, "price": round(stock_price, 2)}
 
     return stock_price_dict
-
-
-if __name__ == "__main__":
-    # print(get_currency_rate("USD"))
-    pprint.pprint(get_stocks_price('AAPL'), width=60)

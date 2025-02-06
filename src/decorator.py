@@ -40,7 +40,7 @@ def log(filename: Optional[str] = None) -> Callable:
                 if filename:
 
                     path = os.path.join(os.path.dirname(__file__), "..", "data", f"{filename}.txt")
-                    with open(path, "a", encoding="utf-8") as file:
+                    with open(path, "w", encoding="utf-8") as file:
                         file.write(message + "\n")
                 else:
                     print(message)

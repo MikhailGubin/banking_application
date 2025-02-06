@@ -1,10 +1,7 @@
-import datetime
 import os
 from typing import Any
 
-from unittest.mock import patch
-
-# from freezegun import freeze_time
+from freezegun import freeze_time
 
 from src.decorator import log, summ_two_numbers
 
@@ -20,8 +17,8 @@ def test_summ_two_numbers() -> None:
     assert result == 3
 
 
-# @freeze_time("2023-01-01")
-def test_log_read_in_file(mock_datetime) -> None:
+@freeze_time("2023-01-01")
+def test_log_read_in_file() -> None:
     """
     Проверяет вывод сообщений декоратором log в файл
 
@@ -35,7 +32,7 @@ def test_log_read_in_file(mock_datetime) -> None:
     ]
 
 
-# @freeze_time("2023-01-01")
+@freeze_time("2023-01-01")
 def test_log_typeerror() -> None:
     """
     Проверяет, что декоратор loq корректно
@@ -50,7 +47,7 @@ def test_log_typeerror() -> None:
     ]
 
 
-# @freeze_time("2023-01-01")
+@freeze_time("2023-01-01")
 def test_log_error() -> None:
     """
     Проверяет, что декоратор loq корректно
@@ -67,7 +64,7 @@ def test_log_error() -> None:
     ]
 
 
-# @freeze_time("2023-01-01")
+@freeze_time("2023-01-01")
 def test_log_message(capsys: Any) -> None:
     """
     Проверяет вывод сообщений декоратора log в консоль
@@ -82,4 +79,4 @@ def test_log_message(capsys: Any) -> None:
 
     summ_numbers(1, 2)
     captured = capsys.readouterr()
-    assert captured.out == ("summ_numbers ok, result: 3\nstart - 2023-01-01 00:00:00; stop - 2023-01-01 00:00:00\n")
+    assert captured.out == "summ_numbers ok, result: 3\nstart - 2023-01-01 00:00:00; stop - 2023-01-01 00:00:00\n"

@@ -20,12 +20,12 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
     равен одному месяцу (с начала месяца, на который выпадает дата, по саму дату).
     """
     if type(date) is not str:
-        print("Неправильная дата")
+        print("\nНеправильная дата")
         return None
     try:
         date_end = datetime.datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
     except Exception as error_message:
-        print(f"\n Возникла ошибка при обработке строки даты. Текст ошибки:"
+        print(f"\nВозникла ошибка при обработке строки даты. Текст ошибки:"
               f"{error_message}")
         return None
     if date_range not in ["M", "W", "Y", "ALL"]:

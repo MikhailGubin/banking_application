@@ -1,10 +1,24 @@
 import datetime
 import calendar
+import logging
+import os
 from typing import List, Dict, Any
 
-from src.processing import PATH_TO_EXCEL_FILE
+from src.processing import PATH_TO_EXCEL_FILE, BASE_DIR
 from src.readers import read_excel_file
 from src.writer import writing_dataframe_to_dict
+
+
+# Задаю путь к файлу utils.log в директории logs
+LOG_PATH = os.path.join(BASE_DIR, "logs", "utils.log")
+
+
+logger_utils = logging.getLogger(__name__)
+file_handler_utils = logging.FileHandler(LOG_PATH, mode="w")
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler_utils.setFormatter(file_formatter)
+logger_utils.addHandler(file_handler_utils)
+logger_utils.setLevel(logging.DEBUG)
 
 
 def get_transactions_for_investment() -> List[Dict[str, Any]]:

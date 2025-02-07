@@ -12,15 +12,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Задаю путь к JSON-файлу с запросами валют и акций
 PATH_TO_USER_SETTINGS_FILE = os.path.join(BASE_DIR, "user_settings.json")
 # Задаю путь к файлу utils.log в директории logs
-# LOG_PATH = os.path.join(BASE_DIR, "data", "services.log")
-#
-#
-# logger_utils = logging.getLogger(__name__)
-# file_handler_utils = logging.FileHandler(LOG_PATH, mode="w")
-# file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-# file_handler_utils.setFormatter(file_formatter)
-# logger_utils.addHandler(file_handler_utils)
-# logger_utils.setLevel(logging.DEBUG)
+LOG_PATH_UTILS = os.path.join(BASE_DIR, "data", "utils.log")
+
+
+logger_utils = logging.getLogger(__name__)
+file_handler_utils = logging.FileHandler(LOG_PATH_UTILS, mode="w")
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler_utils.setFormatter(file_formatter)
+logger_utils.addHandler(file_handler_utils)
+logger_utils.setLevel(logging.DEBUG)
 
 def get_date_range(date: str, date_range: str= "M") -> tuple | None:
     """
@@ -71,13 +71,22 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
 
 def get_json_answer(date: str, date_range: str= "M") -> list[dict]:
     """ Возвращает JSON-ответ для модуля views.py """
+    logger_utils.info("Начало работы приложения 'События'")
     try:
         date_start, date_end = get_date_range(date, date_range)
+        logger_utils.info("Окончание работы функции работы функции get_date_range")
+
         transactions_list = get_transactions_in_date_range(date_start, date_end)
+        logger_utils.info("Окончание работы функции работы функции get_transactions_in_date_range")
+
         expenses_dict = expenses_in_date_range(transactions_list)
+        logger_utils.info("Окончание работы функции работы функции expenses_in_date_range")
+
         income_dict = income_in_date_range(transactions_list)
+        logger_utils.info("Окончание работы функции работы функции income_in_date_range")
 
         user_settings = read_json_file(PATH_TO_USER_SETTINGS_FILE)
+        logger_utils.info("Окончание работы функции работы функции read_json_file")
 
         currencies_list = []
         for currency in user_settings["user_currencies"]:
@@ -90,9 +99,12 @@ def get_json_answer(date: str, date_range: str= "M") -> list[dict]:
         json_answer = {"expenses": expenses_dict, "income": income_dict, "currency_rates": currencies_list,
                        "stock_prices": stocks_list}
     except Exception as error_message:
-        print(f"Возникла ошибка. Текст ошибки: \n{error_message}")
+        logger_utils.error(f"Возникла ошибка. Текст ошибки: \n{error_message}")
+        print(f"\nВозникла ошибка. Текст ошибки: \n{error_message}")
         return [{}]
     if json_answer == {}:
-        print("Нет данных")
+        logger_utils.info("Нет данных в ответе от приложения 'События'")
+        print("Нет данных в ответе от приложения 'События'")
         return [{}]
+    logger_utils.info("Успешное окончание работы приложения 'События'")
     return [json_answer]

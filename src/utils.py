@@ -2,10 +2,10 @@ import datetime
 import json
 import logging
 import os
-from typing import List, Dict, Any
+from typing import Any
 
 from src.external_api import get_currency_rate, get_stocks_price
-from src.processing import get_transactions_in_date_range, expenses_in_date_range, income_in_date_range
+from src.processing import expenses_in_date_range, get_transactions_in_date_range, income_in_date_range
 from src.readers import read_json_file
 
 # Получаю абсолютный путь к корневой директории проекта
@@ -23,7 +23,8 @@ file_handler_utils.setFormatter(file_formatter)
 logger_utils.addHandler(file_handler_utils)
 logger_utils.setLevel(logging.DEBUG)
 
-def get_date_range(date: str, date_range: str= "M") -> tuple | None:
+
+def get_date_range(date: str, date_range: str = "M") -> tuple | None:
     """
     Создаёт диапазон дат, к котором просматриваются все операции.
     На вход функции подаются дата, до которой будут рассматриваться операции
@@ -36,42 +37,48 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
     try:
         date_end = datetime.datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
     except Exception as error_message:
-        print(f"\nВозникла ошибка при обработке строки даты. Текст ошибки:"
-              f"{error_message}")
+        print(f"\nВозникла ошибка при обработке строки даты. Текст ошибки:" f"{error_message}")
         return None
     if date_range not in ["M", "W", "Y", "ALL"]:
         print("Неправильные данные для диапазона дат")
         return None
 
     date_start = date_end
-    if date_range == 'W':
+    if date_range == "W":
         date_start = date_end - datetime.timedelta(date_end.isoweekday()) + datetime.timedelta(days=1)
         date_start = date_start.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    elif date_range == 'M':
+    elif date_range == "M":
         date_start = date_end.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    elif date_range == 'Y':
+    elif date_range == "Y":
         date_start = date_end.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    elif date_range == 'ALL':
+    elif date_range == "ALL":
         day_date_end = date_end.day
         month_date_end = date_end.month
         year_date_end = date_end.year
         if month_date_end < 3:
-            date_start = date_end.replace(year=(year_date_end - 1),
-                                          month=(month_date_end + 12 - 3),
-                                          day=day_date_end, hour=0, minute=0, second=0, microsecond=0)
+            date_start = date_end.replace(
+                year=(year_date_end - 1),
+                month=(month_date_end + 12 - 3),
+                day=day_date_end,
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0,
+            )
         else:
 
-            date_start = date_end.replace(month=(month_date_end - 3), day=day_date_end, hour=0,
-                                          minute=0, second=0, microsecond=0)
+            date_start = date_end.replace(
+                month=(month_date_end - 3), day=day_date_end, hour=0, minute=0, second=0, microsecond=0
+            )
 
     return date_start, date_end
 
 
-def get_json_answer(date: str, date_range: str= "M") -> list[dict[Any, Any]] | str:
-    """ Возвращает JSON-ответ для модуля views.py """
+def get_json_answer(date: str, date_range: str = "M") -> list[dict[Any, Any]] | str:
+    """Возвращает JSON-ответ для модуля views.py"""
     logger_utils.info("Начало работы приложения 'События'")
     try:
         date_start, date_end = get_date_range(date, date_range)
@@ -97,8 +104,14 @@ def get_json_answer(date: str, date_range: str= "M") -> list[dict[Any, Any]] | s
         for stock in user_settings["user_stocks"]:
             stocks_list.append(get_stocks_price(stock))
 
-        result = [{"expenses": expenses_dict, "income": income_dict, "currency_rates": currencies_list,
-                       "stock_prices": stocks_list}]
+        result = [
+            {
+                "expenses": expenses_dict,
+                "income": income_dict,
+                "currency_rates": currencies_list,
+                "stock_prices": stocks_list,
+            }
+        ]
     except Exception as error_message:
         logger_utils.error(f"Возникла ошибка. Текст ошибки: \n{error_message}")
         print(f"\nВозникла ошибка. Текст ошибки: \n{error_message}")

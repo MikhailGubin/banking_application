@@ -3,7 +3,6 @@ import os
 import requests
 from dotenv import load_dotenv
 
-
 # URL для сайта Exchange Rates Data API
 BASE_URL = "https://api.apilayer.com/exchangerates_data/convert"
 # URL для сайта Exchange Rates Data API
@@ -49,8 +48,9 @@ def get_stocks_price(stock: str) -> dict:
     apikey_stock = os.getenv("API_KEY_TWELVE_DATA")
 
     try:
-        response = requests.get(f"https://api.twelvedata.com/time_series?symbol={stock}&interval=1h&"
-                                f"apikey={apikey_stock}")
+        response = requests.get(
+            f"https://api.twelvedata.com/time_series?symbol={stock}&interval=1h&" f"apikey={apikey_stock}"
+        )
     except requests.exceptions.RequestException:
         print("Ошибка при работе с HTTP запросом")
         return {}
@@ -61,7 +61,7 @@ def get_stocks_price(stock: str) -> dict:
     answer_api = response.json()
     try:
         # stock_price = answer_api
-        stock_price = float(answer_api['values'][0]['close'])
+        stock_price = float(answer_api["values"][0]["close"])
     except Exception as error_text:
         print(f"\nНекорректные данные в ответе от API. Код ошибки: {error_text}")
         return {}

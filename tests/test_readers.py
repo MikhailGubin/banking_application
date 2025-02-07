@@ -1,6 +1,7 @@
 import os
 from typing import Any
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+
 import pandas as pd
 
 from src.readers import read_excel_file, read_json_file
@@ -12,7 +13,7 @@ from src.writer import writing_dataframe_to_dict
 def test_read_excel_file(mock_read: Any) -> None:
     """Проверяет работу функции read_excel_file"""
     mock_read.return_value = pd.DataFrame({"Yes": [50, 131], "No": [21, 2]})
-    assert writing_dataframe_to_dict(read_excel_file("test.xlsx")) == [{'No': 21, 'Yes': 50}, {'No': 2, 'Yes': 131}]
+    assert writing_dataframe_to_dict(read_excel_file("test.xlsx")) == [{"No": 21, "Yes": 50}, {"No": 2, "Yes": 131}]
     mock_read.assert_called_once_with("test.xlsx")
 
 
@@ -31,13 +32,15 @@ def test_read_excel_file_wrong_format() -> None:
     """
     assert read_excel_file(PATH_TO_USER_SETTINGS_FILE) == []
 
+
 def test_read_json_file() -> None:
     """Проверяет работу функции read_json_file"""
     # Функция с данными data_for_read_json_file находится в файле operations_for_tests.py
     assert read_json_file(PATH_TO_USER_SETTINGS_FILE) == {
         "user_currencies": ["USD", "EUR"],
-        "user_stocks": ["AAPL", "AMZN"]
+        "user_stocks": ["AAPL", "AMZN"],
     }
+
 
 def test_read_json_file_wrong_path() -> None:
     """
@@ -46,6 +49,7 @@ def test_read_json_file_wrong_path() -> None:
     """
     path_to_file = os.path.join(os.path.dirname(__file__), "operations.json")
     assert read_json_file(path_to_file) == {}
+
 
 def test_read_json_file_empty() -> None:
     """
@@ -58,6 +62,7 @@ def test_read_json_file_empty() -> None:
     assert result == {}
     mocked_open.assert_called_once_with(PATH_TO_USER_SETTINGS_FILE)
 
+
 def test_read_json_file_not_list() -> None:
     """
     Проверяет, что функция read_json_file выдаёт пустой список,
@@ -68,6 +73,7 @@ def test_read_json_file_not_list() -> None:
         result = read_json_file(PATH_TO_USER_SETTINGS_FILE)
     assert result == {}
     mocked_open.assert_called_once_with(PATH_TO_USER_SETTINGS_FILE)
+
 
 def test_read_json_file_json_decode_error() -> None:
     """

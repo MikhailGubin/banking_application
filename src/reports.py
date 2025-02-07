@@ -2,14 +2,13 @@ import datetime
 import json
 import logging
 import os
-from typing import Optional, List, Dict, Any
+from typing import Any, Optional
 
 import pandas as pd
 
 from src.decorator import log
-from src.utils import get_date_range, BASE_DIR
+from src.utils import BASE_DIR, get_date_range
 from src.writer import writing_dataframe_to_dict
-
 
 # Задаю путь к файлу reports.log в директории logs
 LOG_REPORTS_PATH = os.path.join(BASE_DIR, "data", "reports.log")
@@ -23,11 +22,12 @@ logger_reports.setLevel(logging.DEBUG)
 
 
 @log(filename="spending_by_category")
-def spending_by_category(transactions: pd.DataFrame, category_name: str, date: Optional[str] = None)-> list[dict[
-    Any, Any]] | str:
+def spending_by_category(
+    transactions: pd.DataFrame, category_name: str, date: Optional[str] = None
+) -> list[dict[Any, Any]] | str:
     """
-     Возвращает траты по заданной категории за последние 3 месяца от переданной даты.
-     Принимает на вход датафрейм с транзакциями, название категории и опциональную дату
+    Возвращает траты по заданной категории за последние 3 месяца от переданной даты.
+    Принимает на вход датафрейм с транзакциями, название категории и опциональную дату
     """
     logger_reports.info("Приложение 'Траты по категории' начинает работу")
     if not date:
@@ -53,10 +53,10 @@ def spending_by_category(transactions: pd.DataFrame, category_name: str, date: O
     try:
         transactions.fillna(value="0", inplace=True)
         transactions_in_date_range = transactions.loc[
-        (start_date <= pd.to_datetime(transactions['Дата операции'], format="%d.%m.%Y %H:%M:%S")) &
-        (pd.to_datetime(transactions['Дата операции'], format="%d.%m.%Y %H:%M:%S") <= end_date) &
-        (transactions['Категория'] == category_name)
-                ]
+            (start_date <= pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S"))
+            & (pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S") <= end_date)
+            & (transactions["Категория"] == category_name)
+        ]
     except Exception as error_text:
         logger_reports.error(f"\nОшибка при работе с датафреймом. Текст ошибки: {error_text}")
         print(f"\nОшибка при работе с датафреймом. Текст ошибки: {error_text}")

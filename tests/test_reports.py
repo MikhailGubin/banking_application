@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 import pandas as pd
 import pytest
@@ -10,7 +11,7 @@ from src.reports import spending_by_category
 def test_spending_by_category()-> None:
     """ Проверяет работу функции spending_by_category """
     df_transactions = read_excel_file(PATH_TO_EXCEL_FILE)
-    assert spending_by_category(df_transactions, 'Госуслуги', '27.12.2021 00:00:00') == [
+    assert json.loads(spending_by_category(df_transactions, 'Госуслуги', '27.12.2021 00:00:00')) == [
         {'MCC': 9402.0,
    'Бонусы (включая кэшбэк)': 2,
    'Валюта операции': 'RUB',
@@ -18,7 +19,7 @@ def test_spending_by_category()-> None:
    'Дата операции': '24.12.2021 20:02:48',
    'Дата платежа': '25.12.2021',
    'Категория': 'Госуслуги',
-   'Кэшбэк': '',
+   'Кэшбэк': '0',
    'Номер карты': '*7197',
    'Округление на инвесткопилку': 0,
    'Описание': 'Почта России',
@@ -33,7 +34,7 @@ def test_spending_by_category()-> None:
    'Дата операции': '24.12.2021 19:53:32',
    'Дата платежа': '25.12.2021',
    'Категория': 'Госуслуги',
-   'Кэшбэк': '',
+   'Кэшбэк': '0',
    'Номер карты': '*7197',
    'Округление на инвесткопилку': 0,
    'Описание': 'Почта России',
@@ -58,7 +59,7 @@ def test_spending_by_category_wrong_date_or_category(category_name: str, date: O
     или отсутствуют транзакции
     """
     df_transactions = read_excel_file(PATH_TO_EXCEL_FILE)
-    assert spending_by_category(df_transactions, category_name, date) == [{}]
+    assert json.loads(spending_by_category(df_transactions, category_name, date)) == [{}]
 
 
 @pytest.mark.parametrize(
@@ -75,4 +76,5 @@ def test_spending_by_category_empty_df(transactions: any) -> None:
     Проверяет работу функции spending_by_category,
     когда отсутствуют датафрейм с транзакциями
     """
-    assert spending_by_category(transactions, 'Госуслуги', '27.12.2021 00:00:00') == [{}]
+    assert json.loads(spending_by_category(transactions, 'Госуслуги',
+                                           '27.12.2021 00:00:00')) == [{}]

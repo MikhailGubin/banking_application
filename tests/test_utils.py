@@ -1,4 +1,5 @@
 import datetime
+import json
 from unittest.mock import patch
 import pytest
 from src.utils import get_date_range, get_json_answer
@@ -62,7 +63,7 @@ def test_get_json_answer(mock_get) -> None:
     }
 
 
-    assert get_json_answer("25.11.2021 14:33:34", "M") == [
+    assert json.loads(get_json_answer("25.11.2021 14:33:34", "M")) == [
         {'expenses':
              {'total_amount': -53700,
               'main': [{'category': 'ЖКХ', 'amount': 12099},
@@ -100,4 +101,4 @@ def test_get_json_answer_wrong_data(date: str, date_range: str) -> None:
         Проверяю работу функции get_json_answer, когда на вход
         передаются неверные данные
         """
-        assert get_json_answer(date, date_range) == [{}]
+        assert json.loads(get_json_answer(date, date_range)) == [{}]

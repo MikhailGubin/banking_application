@@ -1,7 +1,8 @@
 import datetime
+import json
 import logging
 import os
-
+from typing import List, Dict, Any
 
 from src.external_api import get_currency_rate, get_stocks_price
 from src.processing import get_transactions_in_date_range, expenses_in_date_range, income_in_date_range
@@ -69,7 +70,7 @@ def get_date_range(date: str, date_range: str= "M") -> tuple | None:
     return date_start, date_end
 
 
-def get_json_answer(date: str, date_range: str= "M") -> list[dict]:
+def get_json_answer(date: str, date_range: str= "M") -> list[dict[Any, Any]] | str:
     """ Возвращает JSON-ответ для модуля views.py """
     logger_utils.info("Начало работы приложения 'События'")
     try:
@@ -96,15 +97,18 @@ def get_json_answer(date: str, date_range: str= "M") -> list[dict]:
         for stock in user_settings["user_stocks"]:
             stocks_list.append(get_stocks_price(stock))
 
-        json_answer = {"expenses": expenses_dict, "income": income_dict, "currency_rates": currencies_list,
-                       "stock_prices": stocks_list}
+        result = [{"expenses": expenses_dict, "income": income_dict, "currency_rates": currencies_list,
+                       "stock_prices": stocks_list}]
     except Exception as error_message:
         logger_utils.error(f"Возникла ошибка. Текст ошибки: \n{error_message}")
         print(f"\nВозникла ошибка. Текст ошибки: \n{error_message}")
-        return [{}]
-    if json_answer == {}:
+        return json.dumps([{}])
+
+    if result == [{}]:
         logger_utils.info("Нет данных в ответе от приложения 'События'")
         print("Нет данных в ответе от приложения 'События'")
-        return [{}]
+        return json.dumps([{}])
+
+    json_answer = json.dumps(result)
     logger_utils.info("Успешное окончание работы приложения 'События'")
-    return [json_answer]
+    return json_answer

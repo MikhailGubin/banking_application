@@ -1,3 +1,4 @@
+import json
 import pprint
 
 from src.processing import PATH_TO_EXCEL_FILE
@@ -7,7 +8,7 @@ from src.services import get_transactions_for_investment, investment_bank
 from src.views import events
 
 
-def main_events() -> list[dict]:
+def main_events() -> list[dict] | str:
     """ Запускает работу приложения "События" для анализа транзакций """
 
     print("Здравствуйте!\nДобро пожаловать в приложение для анализа транзакций."
@@ -25,8 +26,9 @@ def main_events() -> list[dict]:
     if date_range.upper() not in ["W", "M", "Y", "ALL"]:
         date_range = "M"
     print(f"Выбран параметр {date_range} для временного диапазона")
-
     result_events = events(date, date_range)
+    if result_events == [{}]:
+        return [{}]
 
     if date_range == "W":
         text_answer = "Данные за неделю, на которую приходится указанная дата"
@@ -45,7 +47,7 @@ def main_events() -> list[dict]:
 
 
 def main_investment() -> float:
-    """ Запускает работу приложения "Инвесткопилка" для анализа транзакций """
+    """ Запускает работу сервиса "Инвесткопилка" для анализа транзакций """
 
     print("Запустить приложение 'Инвесткопилка'? Да/Нет")
     user_answer = input()
@@ -68,21 +70,24 @@ def main_investment() -> float:
 
     return result_investment
 
-def main_spending_by_category() -> list[dict]:
+def main_spending_by_category() -> str:
     """ Запускает работу приложения "Траты по категории" для анализа транзакций """
 
-    print("Запустить приложение 'Траты по категории'? Да/Нет")
-    user_answer = input()
+    user_answer = input("Запустить приложение 'Траты по категории'? Да/Нет")
     if user_answer.lower() != "да":
-        print("Приложение 'Траты по категории' не запускалось")
-        return [{}]
+        print("\nПриложение 'Траты по категории' не запускалось")
+        return json.dumps([{}])
 
     category_name = input("Ведите название категории")
     date = input("\nВведите дату, до которой будут рассматриваться транзакции. "
           "\nФормат даты должен быть следующим: \nДень.Месяц.Год Часы:Минуты:Секунды'\n")
+
     transactions = read_excel_file(PATH_TO_EXCEL_FILE)
 
     result_spending_by_category = spending_by_category(transactions, category_name, date)
+
+    if result_spending_by_category == json.dumps([{}]):
+        return json.dumps([{}])
 
     pprint.pprint(f"\nРезультат работы приложения 'Траты по категории':  "
                   f"\nЗа последние 3 месяца от указанной даты, {date} "

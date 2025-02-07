@@ -1,7 +1,8 @@
 import datetime
+import json
 import logging
 import os
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 import pandas as pd
 
@@ -22,13 +23,14 @@ logger_reports.setLevel(logging.DEBUG)
 
 
 @log(filename="spending_by_category")
-def spending_by_category(transactions: pd.DataFrame, category_name: str, date: Optional[str] = None)-> list[dict]:
+def spending_by_category(transactions: pd.DataFrame, category_name: str, date: Optional[str] = None)-> list[dict[
+    Any, Any]] | str:
     """
      Возвращает траты по заданной категории за последние 3 месяца от переданной даты.
      Принимает на вход датафрейм с транзакциями, название категории и опциональную дату
     """
     logger_reports.info("Приложение 'Траты по категории' начинает работу")
-    if date is None:
+    if not date:
         logger_reports.info("Дата не выбрана, берется текущая дата.")
         print("Дата не выбрана, берется текущая дата.")
         date_obj = datetime.datetime.now()
@@ -39,7 +41,7 @@ def spending_by_category(transactions: pd.DataFrame, category_name: str, date: O
     except Exception as error_message:
         logger_reports.error(f"Возникла ошибка при обработке даты. Текст ошибки: \n{error_message}")
         print(f"\nВозникла ошибка при обработке даты. Текст ошибки: \n{error_message}")
-        return [{}]
+        return json.dumps([{}])
 
     start_date = pd.to_datetime(start_date, format="%d.%m.%Y %H:%M:%S")
     end_date = pd.to_datetime(end_date, format="%d.%m.%Y %H:%M:%S")
@@ -47,7 +49,7 @@ def spending_by_category(transactions: pd.DataFrame, category_name: str, date: O
     if transactions is []:
         logger_reports.error("Пустой датафрейм с транзакциями")
         print("\nПустой датафрейм с транзакциями")
-        return [{}]
+        return json.dumps([{}])
     try:
         transactions.fillna(value="0", inplace=True)
         transactions_in_date_range = transactions.loc[
@@ -58,8 +60,14 @@ def spending_by_category(transactions: pd.DataFrame, category_name: str, date: O
     except Exception as error_text:
         logger_reports.error(f"\nОшибка при работе с датафреймом. Текст ошибки: {error_text}")
         print(f"\nОшибка при работе с датафреймом. Текст ошибки: {error_text}")
-        return [{}]
+        return json.dumps([{}])
 
     banking_operations = writing_dataframe_to_dict(transactions_in_date_range)
+    try:
+        operations_json = json.dumps(banking_operations)
+    except Exception as error_text:
+        print(f"\nОшибка при преобразовании объекта Python в строку JSON. \nТекст ошибки: {error_text}")
+        return json.dumps([{}])
     logger_reports.info("Приложение 'Траты по категории' успешно закончило работу")
-    return banking_operations
+
+    return operations_json

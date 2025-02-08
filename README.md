@@ -21,7 +21,6 @@
 ```commandline
 python
 git clone git@github.com:MikhailGubin/banking_applications.git
-https://github.com/MikhailGubin/banking_application
 ```
 
 2. #### Установите зависимости:
